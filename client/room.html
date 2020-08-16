@@ -1,0 +1,116 @@
+<html>
+    <head>
+        <!-- colyseus.js client -->
+        <script type="text/javascript" src="https://raw.githack.com/colyseus/colyseus.js/master/dist/colyseus.js"></script>
+        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+        <style>
+            .controls{
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .controls button{
+                margin: 3px;
+            }
+
+            #game{
+                position: relative;
+            }
+
+            .player{
+                position: absolute;
+                height: 20px;
+                width: 20px;
+                background-color: blue;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <div class="row">
+                <div class="col">
+                    <h1 style="text-align: center;">Game room</h1>
+                </div>
+            </div> 
+            <div class="row">
+                <div class="col" id="game" style="background-color: #f5f5f5; height: 500px;">
+                    <!-- PLAYERS HERE -->
+                </div>
+            </div>
+            <div class="row" style="padding-top: 30px;">
+                <div class="col controls">
+                    <button type="button" class="btn btn-dark" onclick="up()" >UP</button>
+                    <div>
+                        <button type="button" class="btn btn-dark" onclick="left()" >LEFT</button>
+                        <button type="button" class="btn btn-dark" onclick="right()" >RIGHT</button>
+                    </div>
+                    <button type="button" class="btn btn-dark" onclick="down()" >DOWN</button>
+                </div>
+                <div class="col">
+                    <ul id="player-list">
+
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </body>
+
+    <script>
+        const host = window.document.location.host.replace(/:.*/, '');
+        const client = new Colyseus.Client(location.protocol.replace("http", "ws") + "//" + host + (location.port ? ':' + location.port : ''));
+        var room;
+
+        client.joinOrCreate("MyRoom").then(roomInstance => {
+            room = roomInstance;
+
+            room.state.players.onAdd = function (player, sessionId){
+                const div = document.createElement('div');
+                div.classList.add('player');
+                div.setAttribute('sessionId', sessionId);
+                div.style.left = player.x;
+                div.style.bottom = player.y;
+                div.innerHTML = sessionId;
+                document.getElementById('game').append(div);
+
+                const list = document.getElementById('player-list');
+                const listItem = document.createElement('li')
+                listItem.innerHTML = sessionId;
+                listItem.setAttribute('sessionId', sessionId);
+                list.append(listItem);
+            };
+
+            room.state.players.onRemove = function (player, sessionId){
+                document.querySelectorAll(`div[sessionId="${sessionId}"]`)[0].remove();
+                document.querySelectorAll(`li[sessionId="${sessionId}"]`)[0].remove();
+
+
+            }
+
+            room.state.players.onChange = function (player, sessionId){
+                const playerElem = document.querySelectorAll(`div[sessionId="${sessionId}"]`)[0];
+                playerElem.style.left = player.x + 'px';
+                playerElem.style.bottom = player.y + 'px';
+                console.log('x'+player.x);
+                console.log('y'+player.y)
+            }
+
+        });
+
+        function up () {
+            room.send("move", { y: 10 });
+        }
+
+        function right () {
+            room.send("move", { x: 10 });
+        }
+
+        function down () {
+            room.send("move", { y: -10 })
+        }
+
+        function left () {
+            room.send("move", { x: -10 })
+        }
+    </script>
+</html>
