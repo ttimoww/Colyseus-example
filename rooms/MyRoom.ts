@@ -67,6 +67,7 @@ export class MyRoom extends Room<State> {
         this.state.removePlayer(client.sessionId);
         console.log(client.sessionId + ' Just left the room.');
         
+
     };
 
     // Cleanup callback, called after there are no more clients in the room. (see `autoDispose`)

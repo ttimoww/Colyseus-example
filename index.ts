@@ -3,6 +3,7 @@ import serveIndex from 'serve-index';
 import path from 'path'
 import { createServer } from 'http';
 import { Server } from 'colyseus';
+import cors from 'cors'
 
 import { MyRoom } from './rooms/MyRoom'
 
@@ -10,6 +11,9 @@ const port = Number(process.env.PORT || 3000) + Number(process.env.NODE_APP_INST
 const app = express();
 
 app.use(express.json());
+app.use(cors());
+
+
 
 // Attach WebSocket Server on HTTP Server.
 const gameServer = new Server({
@@ -29,5 +33,9 @@ gameServer.onShutdown(function(){
 });
 
 gameServer.listen(port);
+
+app.get('/testroute', (req, res) => {
+  res.json({mes: 'test'})
+})
 
 console.log(`Listening on http://localhost:${ port }`);
