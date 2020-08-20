@@ -25,7 +25,6 @@ class State extends Schema{
 
     createPlayer(id: string){
         this.players [ id ] = new Player();
-        console.log(this.players)
     }
 
     removePlayer(id: string){
@@ -41,21 +40,22 @@ class State extends Schema{
     }
 }
 
+
+
 export class MyRoom extends Room<State> {
     // When room is initialized
     onCreate (options: any) { 
-        console.log("MyRoom created!", options);
-
+        this.maxClients = 2;
+        console.log("MyRoom created with room id: " + this.roomId);
+        
         // Initialize the state
         this.setState(new State());
 
         // On 'move' message
         this.onMessage('move', (client, data) => {
-            const V2 = new Vector2(data.x, data.y);
-            console.log(V2);
-            
+            const V2 = new Vector2(data.x, data.y);            
             this.state.movePlayer(client.sessionId, V2)
-        })
+        })        
     }
 
     onJoin (client: Client, options: any, auth: any) { 
@@ -66,8 +66,6 @@ export class MyRoom extends Room<State> {
     onLeave(client: Client){
         this.state.removePlayer(client.sessionId);
         console.log(client.sessionId + ' Just left the room.');
-        
-
     };
 
     // Cleanup callback, called after there are no more clients in the room. (see `autoDispose`)
